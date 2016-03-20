@@ -38,6 +38,19 @@ var pie = d3.layout.pie()
     })
     .sort(null);
 
+var tooltip = d3.select('#chart')
+    .append('div')
+    .attr('class', 'tooltip');
+
+tooltip.append('div')
+    .attr('class', 'label');
+
+tooltip.append('div')
+    .attr('class', 'count');
+
+tooltip.append('div')
+    .attr('class', 'percent');
+
 d3.csv('weekdays.csv', function(error, dataset) {
     dataset.forEach(function(d) {
         d.count = +d.count;
@@ -51,6 +64,21 @@ d3.csv('weekdays.csv', function(error, dataset) {
         .attr('fill', function(d, i) {
             return color(d.data.label);
         });
+
+    path.on('mouseover', function(d) {
+        var total = d3.sum(dataset.map(function(d) {
+            return d.count;
+        }));
+        var percent = Math.round(1000 * d.data.count / total) / 10;
+        tooltip.select('.label').html(d.data.label);
+        tooltip.select('.count').html(d.data.count);
+        tooltip.select('.percent').html(percent + '%');
+        tooltip.style('display', 'block');
+    });
+
+    path.on('mouseout', function(d) {
+        tooltip.style('display', 'none');
+    });
 
     var legend = svg.selectAll('.legend')
         .data(color.domain())
